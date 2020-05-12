@@ -1,0 +1,40 @@
+////////////////////////////////////////////////////////////////////////////////
+// Module:              fAttEVT.spl
+// Created:             14-04-2014
+// Author:              Fabio Motta | Capgemini
+////////////////////////////////////////////////////////////////////////////////
+// Description:   Spel to add events
+// sintaxe:   fAttEVT(spel_name, ticket_persistent_id, evt_name, ref_num);
+
+fAttEVT (string zMethodLog, string zVar1, string zVar2, string zVar3)
+{
+    object group_leader;
+ 
+	if (DEBUG) logf(SIGNIFICANT,"INICIO - %s anexa evento %s no chamado %s ===========",zMethodLog,zVar2,zVar1);
+ 
+    send_wait(0, top_object(), "get_co_group");
+    group_leader = msg[0];
+ 
+    send_wait(0, group_leader, "checkout");
+			if (msg_error()) {
+					 logf(ERROR, "%s - erro ao criar container, evento: %s, chamado: %s - $s", zMethodLog, zVar2,zVar3, msg[0]);
+			} else {
+					if (DEBUG) logf(SIGNIFICANT, "%s - container  criado com sucesso. chamado %s", zMethodLog, zVar3);
+			}
+ 
+    send_wait(0,top_object(),"call_attr","evt","new_attached_event", group_leader,zVar1,zVar2,"INCPRI",0,0,"");
+			if (msg_error()) {
+					logf(ERROR, "%s - Falha anexando o evento: %s ao chamado: %s - %s",  zMethodLog, zVar2, zVar3, msg[0]);
+			} else {
+					if (DEBUG) logf(SIGNIFICANT, "%s - evento %s anexado com sucesso ao chamado %s - %s",  zMethodLog, zVar2,zVar3, msg[0]);
+			}
+    send_wait(0, group_leader, "checkin");
+			if (msg_error()){
+					logf(ERROR, "%s - Falha no checkin ao adicionar o evento: #s no chamado: %s - %s",  zMethodLog, zVar2,zVar3, msg[0]);
+					send_wait(0, group_leader, "uncheck");
+			} else {
+					if (DEBUG == 2) logf(SIGNIFICANT, "%s - evento %s adicionado com sucesso - %s",  zMethodLog, zVar1, msg[0]);
+			}
+        
+	if (DEBUG) logf(SIGNIFICANT,"FIM - %s Adiciona evento: %s no chamado: %s ===========",zMethodLog,zVar2,zVar3);								
+};
